@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conselho P12</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#1e293b', // Custom darker slate
+                950: '#020617',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar for Dark Mode */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      body {
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+
+      /* Markdown Content Styles */
+      .markdown-content h1 { font-size: 1.5rem; font-weight: bold; color: #f59e0b; margin-bottom: 0.75rem; margin-top: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+      .markdown-content h2 { font-size: 1.25rem; font-weight: bold; color: #f8fafc; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+      .markdown-content h3 { font-size: 1.1rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.5rem; margin-top: 1rem; }
+      .markdown-content p { margin-bottom: 0.75rem; color: #94a3b8; line-height: 1.6; }
+      .markdown-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #94a3b8; }
+      .markdown-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; color: #94a3b8; }
+      .markdown-content li { margin-bottom: 0.25rem; padding-left: 0.25rem; }
+      .markdown-content strong { color: #f1f5f9; font-weight: 700; }
+      .markdown-content em { color: #e2e8f0; font-style: italic; }
+      .markdown-content hr { border-color: #334155; margin: 1.5rem 0; }
+      .markdown-content blockquote { border-left: 4px solid #475569; padding-left: 1rem; color: #64748b; font-style: italic; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "react-chartjs-2": "https://aistudiocdn.com/react-chartjs-2@^5.3.1",
+    "chart.js": "https://aistudiocdn.com/chart.js@^4.5.1",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^9.0.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
