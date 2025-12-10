@@ -184,6 +184,14 @@ export const SWOTModule = ({ user }: { user: UserProfile }) => {
 
   const generateWithAI = async () => {
     setGenerating(true);
+    const apiKey = process.env.API_KEY;
+
+    if (!apiKey) {
+        alert("Chave de API não encontrada.");
+        setGenerating(false);
+        return;
+    }
+
     try {
       // Fetch latest diagnose
       const q = query(collection(db, getCollectionPath(user.uid, 'diagnose_strategic')), orderBy('createdAt', 'desc'), limit(1));
@@ -206,7 +214,7 @@ export const SWOTModule = ({ user }: { user: UserProfile }) => {
         Crie 4 itens para cada quadrante. O "score" (0-100) deve representar o impacto/intensidade.
       `;
 
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
@@ -234,7 +242,7 @@ export const SWOTModule = ({ user }: { user: UserProfile }) => {
       await saveDocument(user.uid, 'strategy_swot', newData, 'current');
     } catch (e) {
       console.error(e);
-      alert('Erro ao gerar SWOT com IA. Verifique se realizou os diagnósticos primeiro.');
+      alert('Erro ao gerar SWOT com IA. Verifique se realizou os diagnósticos primeiro ou se a chave de API está válida.');
     } finally {
       setGenerating(false);
     }

@@ -176,7 +176,7 @@ const behavioralQuestions = [
   { id: 8, text: "Qual é a sua maior \"ferida\" ou medo inconsciente?", options: [ { t: "Sentir-se comum ou sem identidade única.", p: 4 }, { t: "Sentir-se invadido ou sem conhecimento suficiente.", p: 5 }, { t: "Sentir-se desprotegido ou sem apoio/segurança.", p: 6 } ] },
   { id: 9, text: "Como você lida com a dor ou problemas difíceis?", options: [ { t: "Fujo da dor buscando distrações, planos futuros e otimismo.", p: 7 }, { t: "Nego a dor e a fraqueza, enfrentando o problema de frente com força.", p: 8 }, { t: "Anestesio a mente, procrastino ou finjo que o problema não é tão grave.", p: 9 } ] },
   { id: 10, text: "O que você espera das pessoas ao seu redor?", options: [ { t: "Que sigam as regras e façam as coisas com perfeição.", p: 1 }, { t: "Que reconheçam meu esforço e gostem de mim.", p: 2 }, { t: "Que reconheçam minha competência e meu sucesso.", p: 3 } ] },
-  { id: 11, text: "Qual é o seu estilo de comunicação predominante?", options: [ { t: "Dramático, autêntico e focado no que está faltando.", p: 4 }, { t: "Lógico, analítico, contido e focado em informações.", p: 5 }, { t: "Cético, questionador e focado em identificar riscos.", p: 6 } ] },
+  { id: 11, text: "Qual é o seu estilo de comunicação predominante?", options: [ { t: "Dramático, autêntico e focado no que está faltando.", p: 4 }, { t: "Lógico, analítico, contido e focado em informações. (Perfil 5)", p: 5 }, { t: "Cético, questionador e focado em identificar riscos.", p: 6 } ] },
   { id: 12, text: "Diante de uma decisão difícil, você:", options: [ { t: "Decide rápido, com base no que vai trazer prazer ou satisfação imediata.", p: 7 }, { t: "Decide rápido, com base no instinto e na vontade de controlar a situação.", p: 8 }, { t: "Demora para decidir, buscando consenso e evitando desagradar alguém.", p: 9 } ] },
   { id: 13, text: "Qual o seu \"Radar\" natural (aquilo que você percebe primeiro)?", options: [ { t: "O erro e o que precisa ser corrigido.", p: 1 }, { t: "As necessidades das outras pessoas.", p: 2 }, { t: "As oportunidades de sucesso e reconhecimento.", p: 3 } ] },
   { id: 14, text: "Qual dom você acredita possuir mais forte?", options: [ { t: "Criatividade, sensibilidade e profundidade.", p: 4 }, { t: "Capacidade analítica, conhecimento técnico e estratégia.", p: 5 }, { t: "Planejamento, lealdade e antecipação de riscos.", p: 6 } ] },
@@ -338,17 +338,27 @@ const StrategicAnalysis = ({ user }: { user: UserProfile }) => {
   const handleSave = async () => {
     setSaving(true);
     const scores = calculateScores();
-    const prompt = `
-      Atue como consultor empresarial sênior do "Conselho P12". 
-      Analise as respostas do empresário: Operacional: ${scores.operacional}/8, Tático: ${scores.tatico}/8, Estratégico: ${scores.estrategico}/8.
-      Instruções OBRIGATÓRIAS: 1. APENAS Markdown. 2. ## Diagnóstico da Maturidade. 3. ## Plano de Ação Imediato.
-    `;
-    let aiAnalysis = "Análise indisponível.";
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-      aiAnalysis = response.text || "Sem resposta.";
-    } catch (error) { console.error(error); }
+    const apiKey = process.env.API_KEY;
+    
+    let aiAnalysis = "Análise indisponível (Chave de API não configurada).";
+    
+    if (apiKey) {
+      const prompt = `
+        Atue como consultor empresarial sênior do "Conselho P12". 
+        Analise as respostas do empresário: Operacional: ${scores.operacional}/8, Tático: ${scores.tatico}/8, Estratégico: ${scores.estrategico}/8.
+        Instruções OBRIGATÓRIAS: 1. APENAS Markdown. 2. ## Diagnóstico da Maturidade. 3. ## Plano de Ação Imediato.
+      `;
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        aiAnalysis = response.text || "Sem resposta.";
+      } catch (error) { 
+        console.error("Erro na IA:", error); 
+        aiAnalysis = "Erro ao conectar com a IA. Tente novamente mais tarde.";
+      }
+    } else {
+        console.error("API_KEY não encontrada");
+    }
 
     await saveDocument(user.uid, 'diagnose_strategic', { createdAt: new Date(), answers, scores, aiAnalysis, actionPlan: "Ver IA" });
     await loadHistory();
@@ -411,13 +421,22 @@ const CompanyPhases = ({ user }: { user: UserProfile }) => {
     else if (total <= 26) { phase = 5; name = "Fase 5 - Expansão"; }
     else if (total <= 29) { phase = 6; name = "Fase 6 - Transformação"; }
 
-    const prompt = `Atue como consultor P12. Empresa ${total}/30 itens. ${name}. APENAS Markdown. ## Análise Motivacional. ## Próximos Passos.`;
-    let aiAnalysis = "Análise indisponível.";
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-      aiAnalysis = response.text || "Sem resposta.";
-    } catch (e) { console.error(e); }
+    const apiKey = process.env.API_KEY;
+    let aiAnalysis = "Análise indisponível (Chave de API não configurada).";
+    
+    if (apiKey) {
+        const prompt = `Atue como consultor P12. Empresa ${total}/30 itens. ${name}. APENAS Markdown. ## Análise Motivacional. ## Próximos Passos.`;
+        try {
+          const ai = new GoogleGenAI({ apiKey });
+          const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+          aiAnalysis = response.text || "Sem resposta.";
+        } catch (e) { 
+            console.error(e); 
+            aiAnalysis = "Erro na IA.";
+        }
+    } else {
+        console.error("API_KEY não encontrada");
+    }
 
     await saveDocument(user.uid, 'diagnose_phases', { createdAt: new Date(), checkedItems, totalScore: total, phase, phaseName: name, aiAnalysis });
     await loadHistory();
@@ -523,33 +542,42 @@ const BehavioralAnalysis = ({ user }: { user: UserProfile }) => {
     setSaving(true);
     const { profileScores, triadScores, dominantProfileNumber } = calculateResults();
     const dominantName = profileNames[dominantProfileNumber];
+    const apiKey = process.env.API_KEY;
 
-    const prompt = `
-      Atue como especialista em análise comportamental (Método Decifrar Pessoas - Eneagrama).
-      
-      Resultados do Usuário:
-      - Tríade do Corpo (Operacional): ${triadScores.body}/5 pontos.
-      - Tríade do Coração (Tático): ${triadScores.heart}/5 pontos.
-      - Tríade da Mente (Estratégico): ${triadScores.mind}/5 pontos.
-      - Perfil Dominante: Tipo ${dominantProfileNumber} - ${dominantName}.
-      
-      Gere um relatório em Markdown:
-      ## Análise do Perfil Dominante: ${dominantName}
-      [Descreva motivações, medos e pontos fortes]
-      
-      ## Análise da Tríade Dominante
-      [Explique o que significa ter essa tríade predominante no contexto empresarial]
-      
-      ## Pontos de Atenção e Evolução
-      [3 dicas práticas para o líder]
-    `;
+    let aiAnalysis = "Análise indisponível (Chave de API não configurada).";
+    
+    if (apiKey) {
+      const prompt = `
+        Atue como especialista em análise comportamental (Método Decifrar Pessoas - Eneagrama).
+        
+        Resultados do Usuário:
+        - Tríade do Corpo (Operacional): ${triadScores.body}/5 pontos.
+        - Tríade do Coração (Tático): ${triadScores.heart}/5 pontos.
+        - Tríade da Mente (Estratégico): ${triadScores.mind}/5 pontos.
+        - Perfil Dominante: Tipo ${dominantProfileNumber} - ${dominantName}.
+        
+        Gere um relatório em Markdown:
+        ## Análise do Perfil Dominante: ${dominantName}
+        [Descreva motivações, medos e pontos fortes]
+        
+        ## Análise da Tríade Dominante
+        [Explique o que significa ter essa tríade predominante no contexto empresarial]
+        
+        ## Pontos de Atenção e Evolução
+        [3 dicas práticas para o líder]
+      `;
 
-    let aiAnalysis = "Análise indisponível.";
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-      aiAnalysis = response.text || "Sem resposta.";
-    } catch (e) { console.error(e); }
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        aiAnalysis = response.text || "Sem resposta.";
+      } catch (e) { 
+        console.error(e); 
+        aiAnalysis = "Erro na IA.";
+      }
+    } else {
+        console.error("API_KEY não encontrada");
+    }
 
     const assessment: BehavioralAssessment = {
       createdAt: new Date(),
